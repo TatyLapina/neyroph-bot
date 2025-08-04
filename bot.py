@@ -171,6 +171,12 @@ async def disagree_handler(callback_query: types.CallbackQuery):
 
 # запуск
 if __name__ == "__main__":
+    from aiogram import executor
+
+async def on_startup(dispatcher):
     from asyncio import create_task
     create_task(scheduler())
-    executor.start_polling(dp, skip_updates=True)
+
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
