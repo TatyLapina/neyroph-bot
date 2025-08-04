@@ -37,7 +37,7 @@ async def start_handler(message: types.Message):
         "и даёшь Согласие на обработку персональных данных.\n\n"
         "⬇️ Выбери вариант ниже:",
         reply_markup=keyboard,
-        parse_mode="Markdown"
+        parse_mode="Markdown",
         disable_web_page_preview=True
     )
 
