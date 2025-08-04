@@ -86,8 +86,8 @@ if __name__ == "__main__":
     from aiogram import executor
 
 async def on_startup(dispatcher):
-    from asyncio import create_task
-    create_task(scheduler())
+    import asyncio
+    asyncio.get_event_loop().create_task(scheduler())
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
