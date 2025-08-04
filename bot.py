@@ -38,6 +38,7 @@ async def start_handler(message: types.Message):
         "⬇️ Выбери вариант ниже:",
         reply_markup=keyboard,
         parse_mode="Markdown"
+        **disable_web_page_preview=True**
     )
 
 @dp.callback_query_handler(lambda c: c.data == 'disagree')
