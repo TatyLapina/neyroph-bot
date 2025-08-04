@@ -9,7 +9,7 @@ from aiogram.dispatcher.filters import CommandStart, Command
 import os
 
 # ENV переменные
-TOKEN = os.getenv("TOKEN")
+TOKEN = "8075247657:AAE0FQgogUIlTMPvndzRR_jH-ZM84NRqa4Q"
 print(f"TOKEN: {repr(TOKEN)}")
 MERCHANT_LOGIN = "Neyroph_bot"
 PASSWORD1 = "dR07mRr4HoY8sGQb5Any"
