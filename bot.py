@@ -66,7 +66,7 @@ async def create_characters_handler(callback_query: types.CallbackQuery):
     await callback_query.answer()  # ← это нужно обязательно
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
-        InlineKeyboardButton("✍️ Записаться на обучение", url="https://ai-avatar.ru/learning"),
+        InlineKeyboardButton("✍️ Записаться на обучение", web_app=WebAppInfo(url="https://ai-avatar.ru/learning"))),
         InlineKeyboardButton("📩 Написать в личные", url="https://t.me/ManagerNeyroph"),
         InlineKeyboardButton("⬅️ В главное меню", callback_data="back_to_main")
     )
