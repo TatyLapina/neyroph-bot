@@ -147,3 +147,30 @@ async def scheduler():
         await check_subscriptions()
         await sleep(86400)  # 1 раз в день
 
+@dp.message_handler(commands=['start'])
+async def start_handler(message: types.Message):
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(
+        InlineKeyboardButton("✅ Согласен", callback_data="agree"),
+        InlineKeyboardButton("❌ Не согласен", callback_data="disagree")
+    )
+    await message.answer(
+        "Привет! Прежде чем мы начнём...\n\n"
+        "⚠️ Мы заботимся о твоей конфиденциальности.\n\n"
+        "Нажимая кнопку «Согласен», ты подтверждаешь, что ознакомлен(-а) с "
+        "[Политикой обработки персональных данных](https://docs.google.com/document/d/1XHFjqbDKYhX5am-Ni2uQOO_FaoQhOcLcq7-UiZyQNlE/edit?usp=drive_link) "
+        "и даёшь Согласие на обработку персональных данных.\n\n"
+        "⬇️ Выбери вариант ниже:",
+        reply_markup=keyboard,
+        parse_mode="Markdown"
+    )
+
+@dp.callback_query_handler(lambda c: c.data == 'disagree')
+async def disagree_handler(callback_query: types.CallbackQuery):
+    await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
+
+# запуск
+if __name__ == "__main__":
+    from asyncio import create_task
+    create_task(scheduler())
+    executor.start_polling(dp, skip_updates=True)
