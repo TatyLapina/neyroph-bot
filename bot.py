@@ -82,15 +82,16 @@ async def disagree_handler(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
 
 # запуск
+# запуск
 if __name__ == "__main__":
     from aiogram import executor
-
-async def on_startup(dispatcher):
     import asyncio
-    asyncio.get_event_loop().create_task(scheduler())
 
-if __name__ == "__main__":
+    async def on_startup(dispatcher):
+        asyncio.ensure_future(scheduler())  # ← так правильно для aiogram v2
+
     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
     
 @dp.callback_query_handler(lambda c: c.data == 'back_to_main')
 async def back_to_main(callback_query: types.CallbackQuery):
