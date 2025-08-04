@@ -1,30 +1,47 @@
 import logging
 import csv
 import os
+import hashlib
 from datetime import datetime, timedelta
-
+from asyncio import sleep
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 
+# --- Настройки ---
 TOKEN = os.getenv("TOKEN") or "8075247657:AAEOFQGogUIITMVpndzRR_jH-ZM84NRqa4Q"
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
-
 logging.basicConfig(level=logging.INFO)
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import hashlib
-import csv
-import os
-from datetime import datetime, timedelta
-from asyncio import sleep
-
-GROUP_ID = -1000000000000  # ← замени на ID своей группы "Оплаты"
-CHANNEL_ID = -1000000000000  # ← замени на ID закрытого клуба
+GROUP_ID = -1000000000000  # ID группы "Оплаты"
+CHANNEL_ID = -1000000000000  # ID закрытого клуба
 CSV_FILE = "subscriptions.csv"
 ROBOKASSA_MERCHANT_LOGIN = "Neyroph_bot"
 ROBOKASSA_PASSWORD_1 = "dR07mRr4HoY8sGQb5Any"
+
+# --- Команды ---
+@dp.message_handler(commands=['start'])
+async def start_handler(message: types.Message):
+    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard.add(
+        InlineKeyboardButton("✅ Согласен", callback_data="agree"),
+        InlineKeyboardButton("❌ Не согласен", callback_data="disagree")
+    )
+    await message.answer(
+        "Привет! Прежде чем мы начнём...\n\n"
+        "⚠️ Мы заботимся о твоей конфиденциальности.\n\n"
+        "Нажимая кнопку «Согласен», ты подтверждаешь, что ознакомлен(-а) с "
+        "[Политикой обработки персональных данных](https://docs.google.com/document/d/1XHFjqbDKYhX5am-Ni2uQOO_FaoQhOcLcq7-UiZyQNlE/edit?usp=drive_link) "
+        "и даёшь Согласие на обработку персональных данных.\n\n"
+        "⬇️ Выбери вариант ниже:",
+        reply_markup=keyboard,
+        parse_mode="Markdown"
+    )
+
+@dp.callback_query_handler(lambda c: c.data == 'disagree')
+async def disagree_handler(callback_query: types.CallbackQuery):
+    await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
 
 @dp.callback_query_handler(lambda c: c.data == 'agree')
 async def agree_handler(callback_query: types.CallbackQuery):
@@ -33,15 +50,16 @@ async def agree_handler(callback_query: types.CallbackQuery):
         InlineKeyboardButton("👤 Создание персонажей", callback_data="create_characters"),
         InlineKeyboardButton("🔒 Вступить в закрытый клуб", callback_data="join_club")
     )
-    text = (
-        "Привет! Мы Таня и Костя — основатели студии NEYROPH 🎥📸\n\n"
-        "Мы умеем делать классный визуал с помощью нейросетей и делаем так, чтобы это умел каждый!\n\n"
-        "Выбирай, с чего начнём 👇"
+    await bot.edit_message_text(
+        chat_id=callback_query.message.chat.id,
+        message_id=callback_query.message.message_id,
+        text=(
+            "Привет! Мы Таня и Костя — основатели студии NEYROPH 🎥📸\n\n"
+            "Мы умеем делать классный визуал с помощью нейросетей и делаем так, чтобы это умел каждый!\n\n"
+            "Выбирай, с чего начнём 👇"
+        ),
+        reply_markup=keyboard
     )
-    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
-                                message_id=callback_query.message.message_id,
-                                text=text,
-                                reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'create_characters')
 async def create_characters_handler(callback_query: types.CallbackQuery):
@@ -51,10 +69,13 @@ async def create_characters_handler(callback_query: types.CallbackQuery):
         InlineKeyboardButton("📩 Написать в личные", url="https://t.me/ManagerNeyroph"),
         InlineKeyboardButton("⬅️ В главное меню", callback_data="back_to_main")
     )
-    await bot.send_video(callback_query.from_user.id, open("lesson_placeholder.mp4", "rb"))
-    await bot.send_message(callback_query.from_user.id,
-                           "Это вводный урок — я рассказываю тут про то, как создаются персонажи, на что обращать внимание и как всё устроено.",
-                           reply_markup=keyboard)
+    with open("lesson_placeholder.mp4", "rb") as video:
+        await bot.send_video(callback_query.from_user.id, video)
+    await bot.send_message(
+        callback_query.from_user.id,
+        "Это вводный урок — я рассказываю тут про то, как создаются персонажи, на что обращать внимание и как всё устроено.",
+        reply_markup=keyboard
+    )
 
 @dp.callback_query_handler(lambda c: c.data == 'join_club')
 async def join_club_handler(callback_query: types.CallbackQuery):
@@ -65,37 +86,24 @@ async def join_club_handler(callback_query: types.CallbackQuery):
         InlineKeyboardButton("📅 6 мес — 4790₽", callback_data="pay_6"),
         InlineKeyboardButton("⬅️ Назад", callback_data="back_to_main")
     )
-    text = (
-        "NEYROPH — это закрытый клуб для тех, кто работает с генерацией изображений и видео с помощью нейросетей.\n\n"
-        "🎓 Для новичков: гайды, шаблоны, видеоуроки\n"
-        "🚀 Для опытных: стили, LoRA, видео, GPT-ассистенты\n"
-        "💬 Комьюнити: активный чат, поддержка\n"
-        "📦 Плюс: эксклюзив, вдохновение, мини-курсы\n\n"
-        "Оплачивая, вы принимаете оферту и согласны на списания."
+    await bot.edit_message_text(
+        chat_id=callback_query.message.chat.id,
+        message_id=callback_query.message.message_id,
+        text=(
+            "NEYROPH — это закрытый клуб для тех, кто работает с генерацией изображений и видео с помощью нейросетей.\n\n"
+            "🎓 Для новичков: гайды, шаблоны, видеоуроки\n"
+            "🚀 Для опытных: стили, LoRA, видео, GPT-ассистенты\n"
+            "💬 Комьюнити: активный чат, поддержка\n"
+            "📦 Плюс: эксклюзив, вдохновение, мини-курсы\n\n"
+            "Оплачивая, вы принимаете оферту и согласны на списания."
+        ),
+        reply_markup=keyboard
     )
-    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
-                                message_id=callback_query.message.message_id,
-                                text=text,
-                                reply_markup=keyboard)
-@dp.callback_query_handler(lambda c: c.data == 'disagree')
-async def disagree_handler(callback_query: types.CallbackQuery):
-    await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
 
-# запуск
-# запуск
-if __name__ == "__main__":
-    from aiogram import executor
-    import asyncio
-
-    async def on_startup(dispatcher):
-        asyncio.ensure_future(scheduler())  # ← так правильно для aiogram v2
-
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
-
-    
 @dp.callback_query_handler(lambda c: c.data == 'back_to_main')
 async def back_to_main(callback_query: types.CallbackQuery):
     await start_handler(callback_query.message)
+
 def generate_payment_url(user_id: int, months: int, amount: int) -> str:
     inv_id = int(datetime.now().timestamp())
     description = f"NEYROPH: {months} мес"
@@ -113,9 +121,11 @@ async def handle_payment(callback_query: types.CallbackQuery):
     plans = {"pay_1": (1, 990), "pay_3": (3, 2690), "pay_6": (6, 4790)}
     months, price = plans[callback_query.data]
     url = generate_payment_url(callback_query.from_user.id, months, price)
-    await bot.send_message(callback_query.from_user.id,
+    await bot.send_message(
+        callback_query.from_user.id,
         f"✅ Вы выбрали подписку на {months} мес ({price}₽).\n\n"
-        f"Перейдите по ссылке для оплаты:\n{url}")
+        f"Перейдите по ссылке для оплаты:\n{url}"
+    )
 
 @dp.message_handler(lambda message: message.text.startswith("/paid"))
 async def fake_payment_handler(message: types.Message):
@@ -152,7 +162,8 @@ async def check_subscriptions():
                 await bot.kick_chat_member(CHANNEL_ID, user_id)
             else:
                 updated.append(row)
-        except: pass
+        except:
+            pass
     with open(CSV_FILE, "w", newline='') as f:
         writer = csv.writer(f)
         writer.writerows(updated)
@@ -160,25 +171,12 @@ async def check_subscriptions():
 async def scheduler():
     while True:
         await check_subscriptions()
-        await sleep(86400)  # 1 раз в день
+        await sleep(86400)
 
-@dp.message_handler(commands=['start'])
-async def start_handler(message: types.Message):
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton("✅ Согласен", callback_data="agree"),
-        InlineKeyboardButton("❌ Не согласен", callback_data="disagree")
-    )
-    await message.answer(
-        "Привет! Прежде чем мы начнём...\n\n"
-        "⚠️ Мы заботимся о твоей конфиденциальности.\n\n"
-        "Нажимая кнопку «Согласен», ты подтверждаешь, что ознакомлен(-а) с "
-        "[Политикой обработки персональных данных](https://docs.google.com/document/d/1XHFjqbDKYhX5am-Ni2uQOO_FaoQhOcLcq7-UiZyQNlE/edit?usp=drive_link) "
-        "и даёшь Согласие на обработку персональных данных.\n\n"
-        "⬇️ Выбери вариант ниже:",
-        reply_markup=keyboard,
-        parse_mode="Markdown"
-    )
+# --- Запуск ---
+async def on_startup(dispatcher):
+    from asyncio import ensure_future
+    ensure_future(scheduler())
 
-
-
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
