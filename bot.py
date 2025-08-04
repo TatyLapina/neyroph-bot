@@ -10,6 +10,7 @@ import os
 
 # ENV переменные
 TOKEN = os.getenv("TOKEN")
+print(f"TOKEN: {repr(TOKEN)}")
 MERCHANT_LOGIN = "Neyroph_bot"
 PASSWORD1 = "dR07mRr4HoY8sGQb5Any"
 NOTIFY_CHAT_ID = os.getenv("NOTIFY_CHAT_ID")  # ID группы для уведомлений
