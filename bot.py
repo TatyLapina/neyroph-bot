@@ -77,7 +77,21 @@ async def join_club_handler(callback_query: types.CallbackQuery):
                                 message_id=callback_query.message.message_id,
                                 text=text,
                                 reply_markup=keyboard)
+@dp.callback_query_handler(lambda c: c.data == 'disagree')
+async def disagree_handler(callback_query: types.CallbackQuery):
+    await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
 
+# запуск
+if __name__ == "__main__":
+    from aiogram import executor
+
+async def on_startup(dispatcher):
+    from asyncio import create_task
+    create_task(scheduler())
+
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+    
 @dp.callback_query_handler(lambda c: c.data == 'back_to_main')
 async def back_to_main(callback_query: types.CallbackQuery):
     await start_handler(callback_query.message)
@@ -165,18 +179,5 @@ async def start_handler(message: types.Message):
         parse_mode="Markdown"
     )
 
-@dp.callback_query_handler(lambda c: c.data == 'disagree')
-async def disagree_handler(callback_query: types.CallbackQuery):
-    await bot.send_message(callback_query.from_user.id, "Жаль 😔 Если передумаешь — просто снова нажми /start.")
 
-# запуск
-if __name__ == "__main__":
-    from aiogram import executor
-
-async def on_startup(dispatcher):
-    from asyncio import create_task
-    create_task(scheduler())
-
-if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
 
