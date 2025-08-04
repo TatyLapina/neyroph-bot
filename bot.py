@@ -7,6 +7,7 @@ from asyncio import sleep
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
+from aiogram.types import WebAppInfo
 
 # --- Настройки ---
 TOKEN = os.getenv("TOKEN") or "8075247657:AAEOFQGogUIITMVpndzRR_jH-ZM84NRqa4Q"
@@ -63,23 +64,19 @@ async def agree_handler(callback_query: types.CallbackQuery):
 
 @dp.callback_query_handler(lambda c: c.data == 'create_characters')
 async def create_characters_handler(callback_query: types.CallbackQuery):
-    await callback_query.answer()  # ← это нужно обязательно
+    await callback_query.answer()
+
     keyboard = InlineKeyboardMarkup(row_width=1)
     keyboard.add(
-        InlineKeyboardButton("✍️ Записаться на обучение", web_app=WebAppInfo(url="https://ai-avatar.ru/learning"))),
+        InlineKeyboardButton("✍️ Записаться на обучение", web_app=WebAppInfo(url="https://ai-avatar.ru/learning")),
         InlineKeyboardButton("📩 Написать в личные", url="https://t.me/ManagerNeyroph"),
         InlineKeyboardButton("⬅️ В главное меню", callback_data="back_to_main")
     )
-    try:
-        with open("lesson_placeholder.mp4", "rb") as video:
-            await bot.send_video(callback_query.from_user.id, video)
-    except FileNotFoundError:
-        await bot.send_message(callback_query.from_user.id, "⚠️ Видео не найдено. Убедитесь, что файл lesson_placeholder.mp4 загружен.")
-    await bot.send_message(
-        callback_query.from_user.id,
+
+    await bot.send_video(callback_query.from_user.id, open("lesson_placeholder.mp4", "rb"))
+    await bot.send_message(callback_query.from_user.id,
         "Это вводный урок — я рассказываю тут про то, как создаются персонажи, на что обращать внимание и как всё устроено.",
-        reply_markup=keyboard
-    )
+        reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data == 'join_club')
 async def join_club_handler(callback_query: types.CallbackQuery):
