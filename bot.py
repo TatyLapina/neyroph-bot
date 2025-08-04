@@ -1,7 +1,6 @@
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InputFile
-from telegram.ext import (ApplicationBuilder, CallbackQueryHandler,
-                          CommandHandler, ContextTypes, MessageHandler, filters, JobQueue)
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InputFile
 import datetime
 import csv
 import os
