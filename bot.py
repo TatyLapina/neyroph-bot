@@ -70,7 +70,7 @@ async def create_characters_handler(callback_query: types.CallbackQuery):
     keyboard.add(
         InlineKeyboardButton("✍️ Записаться на обучение", web_app=WebAppInfo(url="https://ai-avatar.ru/learning")),
         InlineKeyboardButton("📩 Написать в личные", url="https://t.me/ManagerNeyroph"),
-        InlineKeyboardButton("⬅️ В главное меню", callback_data="back_to_main")
+        InlineKeyboardButton("⬅️ В главное меню", callback_data="agree")
     )
 
     await bot.send_video(callback_query.from_user.id, open("lesson_placeholder.mp4", "rb"))
@@ -85,7 +85,7 @@ async def join_club_handler(callback_query: types.CallbackQuery):
         InlineKeyboardButton("📅 1 мес — 990₽", callback_data="pay_1"),
         InlineKeyboardButton("📅 3 мес — 2690₽", callback_data="pay_3"),
         InlineKeyboardButton("📅 6 мес — 4790₽", callback_data="pay_6"),
-        InlineKeyboardButton("⬅️ Назад", callback_data="back_to_main")
+        InlineKeyboardButton("⬅️ Назад", callback_data="agree")
     )
     await bot.edit_message_text(
         chat_id=callback_query.message.chat.id,
